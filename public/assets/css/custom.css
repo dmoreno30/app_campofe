@@ -21,13 +21,13 @@
     align-content: flex-start;
     
   }
-
+ 
   .search-container {
     display: flex;
     font-family: 'Roboto', sans-serif;
     justify-content: center;
     align-items: center;
-
+    margin-bottom: 50px;
   }
 
   .search-box-container {
@@ -58,25 +58,32 @@
   }
   
   .search-box:focus {
-    width: 380px;
+    
     box-shadow: 0 0 8px rgba(0, 126, 255, 0.6);
   }
   
   .search-button {
     background-color: #007eff;
     border: none;
-    padding: 12px;
+    padding: 14px;
     cursor: pointer;
     border-radius: 0 50px 50px 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.4s ease;
+    /* transition: background-color 0.4s ease; */
   }
-  
+  .selectordocument{
+    height: 50px;
+    padding: 0 20px;
+    font-size: 18px;
+    border: 1px solid #007eff;
+    outline: none;
+  }
+/* 
   .search-button:hover {
     background-color: #005bb5;
-  }
+  } */
   
   .search-icon {
     width: 22px;
@@ -85,4 +92,52 @@
   
   .search-button:focus {
     outline: none;
+  }
+
+  .alerta-danger{
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff; 
+    background-color: #f44336; 
+    border: 1px solid #d32f2f; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+  }
+  .alerta-success{
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff; 
+    background-color: #007eff; 
+    border: 1px solid #fff; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+  }
+  .boton-aprobacion {
+    background-color: #4CAF50; /* Verde, color común para aprobación */
+    color: white; /* Texto blanco */
+    padding: 15px 32px; /* Espaciado alrededor del texto */
+    font-size: 16px; /* Tamaño del texto */
+    border: none; /* Sin borde */
+    border-radius: 8px; /* Bordes redondeados */
+    cursor: pointer; /* Cambiar el cursor al pasar el mouse */
+    transition: background-color 0.3s, transform 0.2s; /* Transiciones suaves */
+  }
+  
+  .boton-aprobacion:hover {
+    background-color: #45a049; /* Cambiar el color de fondo al pasar el ratón */
+    transform: translateY(-3px); /* Efecto de levantamiento */
+  }
+  
+  .boton-aprobacion:active {
+    background-color: #3e8e41; /* Color de fondo más oscuro al hacer clic */
+    transform: translateY(2px); /* Efecto de presionar el botón */
+  }
+  
+  .boton-aprobacion:focus {
+    outline: none; /* Eliminar el borde de enfoque */
+    box-shadow: 0 0 5px 2px rgba(76, 175, 80, 0.5); /* Sombra verde al enfocar */
   }
