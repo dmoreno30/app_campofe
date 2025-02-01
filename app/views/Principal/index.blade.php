@@ -1,4 +1,3 @@
-<!-- /views/Principal/index.blade.php -->
 @extends('app')
 @section('title', 'Página de Inicio Campo fe')
 @section('content')
@@ -27,12 +26,11 @@
                   <p class="alerta-danger">El Numero indicado NO existe en la RENIEC</p>
                   @break
               @case(1)
-                @if ($result["data"]["mensaje"] == "El prospecto <b>NO</b> existe")
-                    <p class="alerta-danger">Resultado: {!!$result["data"]["mensaje"]!!}  </p>
-                @else
-                    <p class="alerta-success">Resultado: {!!$result["data"]["mensaje"]!!}  </p>
-                @endif
+                  <p class="alerta-danger">Resultado: {!!$result["data"]["mensaje"]!!}</p>
                   @break
+                @case(-3)
+                    <p class="alerta-success">Resultado: {!!$result["data"]["mensaje"]!!}</p>
+                  @break  
           @endswitch
         @endif
       @endif
@@ -50,8 +48,12 @@
         @if(isset($result))
         @if(isset($result["data"]["codigo"]) && $result["data"]["codigo"] == 0)
             <tr>
-                <td colspan="4">No existe el usuario en la Reniec, por favor revisa el numero ingresado</td>
-            </tr>       
+                <td colspan="4">No existe el usuario en la Reniec, por favor revisa el número ingresado</td>
+            </tr>
+        @elseif($result["data"]["reniec"] == null)
+        <tr>
+          <td colspan="4">No hay información de reniec disponible para este cliente</td>
+        </tr>
         @else
             <tr>
                 <th>{{$result["data"]["reniec"]["num_dni"]}}</th>
@@ -62,13 +64,10 @@
                     <input type="hidden" style="display: none;" name="result" value="{{json_encode($result) }}">
                     <button type="submit" class="boton-aprobacion">Si</button>
                 </form>
-                 
-              </td>
-                                        
+              </td>                   
             </tr>
         @endif
     @else
-        <!-- Este bloque se ejecuta si $result no está definido -->
         <tr>
             <td colspan="4">Realiza la busqueda</td>
         </tr>

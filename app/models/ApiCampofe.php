@@ -14,8 +14,9 @@ class ApiCampofe
     private $URL_desblindar = 'https://appmovil.grupofe.com.pe/com/prospecto/digital/desblindar';
     private $URL_Consejeros = 'https://appmovil.grupofe.com.pe/com/prospecto/digital/vendedor_lead';
     private $URL_asignarConsejero = 'https://appmovil.grupofe.com.pe/com/prospecto/digital/cargardistribucionconsejero';
-    private $cod_trabajador = "MKT";
-    private $flg_cliente = "SI";
+    private $URL_ReagendarCita = 'https://appmovil.grupofe.com.pe/com/prospecto/nfutura/registraretapacontac';
+    private $cod_trabajador = 'MKT';
+    private $flg_cliente = 'SI';
 
 
     private function CurlPost($arr, $apiUrl,  $method)
@@ -93,22 +94,16 @@ class ApiCampofe
 
         return $result;
     }
-    public function desblindarLead($TipoDocumento, $Cedula)
+    public function desblindarLead($data)
     {
-        $data = [
-            "cod_documento_identidad" =>  $TipoDocumento,
-            "dsc_documento_identidad" => $Cedula,
-        ];
+
         $result = $this->CurlPost($data,  $this->URL_desblindar, "POST");
 
         return $result;
     }
-    public function BlindarLead($TipoDocumento, $Cedula)
+    public function BlindarLead($data)
     {
-        $data = [
-            "cod_documento_identidad" =>  $TipoDocumento,
-            "dsc_documento_identidad" => $Cedula,
-        ];
+
         $result = $this->CurlPost($data,  $this->URL_asignarConsejero, "POST");
 
         return $result;
@@ -119,6 +114,14 @@ class ApiCampofe
             "flg_estado" => "SI"
         ];
         $result = $this->CurlPost($data,  $this->URL_Consejeros, "POST");
+
+        return $result;
+    }
+
+    public function URL_ReagendarCita($data)
+    {
+
+        $result = $this->CurlPost($data,  $this->URL_ReagendarCita, "POST");
 
         return $result;
     }

@@ -14,3 +14,4 @@ yarn-error.log
 /app/Core/logs
 /app/helpers/log.log
 error.log
+json.txt

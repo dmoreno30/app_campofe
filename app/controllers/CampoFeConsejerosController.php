@@ -7,6 +7,7 @@ use App\Controllers\Controller;
 use App\Models\ApiCampofe;
 use App\Models\APIBitrix24;
 use App\helpers\Auxhelpers;
+use Stringable;
 
 class CampoFeConsejerosController extends \Leaf\Controller
 {
@@ -19,6 +20,8 @@ class CampoFeConsejerosController extends \Leaf\Controller
         $placement_options = json_decode($_REQUEST['PLACEMENT_OPTIONS'], true);
         $idProspecto = $placement_options["ID"];
 
+
+
         return render('Consejeros/index', ['idProspecto' => $idProspecto]);
     }
 
@@ -29,27 +32,32 @@ class CampoFeConsejerosController extends \Leaf\Controller
         $idProspecto =   app()->request()->get('idProspecto');
         if ($consultar == "consultar") {
             $this->apiCampoFe = new ApiCampofe();
+            $this->apiBitrix24 = new apiBitrix24();
+            $this->helpers = new Auxhelpers();
             $result = $this->apiCampoFe->consejeros();
+            $resultBitrix24 = $this->apiBitrix24->getLead($idProspecto);
+            $blindado = $resultBitrix24["UF_CRM_1732304972"] == 120 ? "SI" : "NO";
 
-            return render('Consejeros/index', ['consultar' => $consultar, 'idProspecto' => $idProspecto, 'result' => $result]);
+            return render('Consejeros/index', ['consultar' => $consultar, 'idProspecto' => $idProspecto, 'result' => $result, 'blindado' => $blindado]);
         }
     }
-    public function blindar($idProspecto, $cod_vendedor)
+    public function blindar($idProspecto, $cod_vendedor, $dsc_vendedor)
     {
         $this->helpers = new Auxhelpers();
         $this->apiBitrix24 = new APIBitrix24();
+        $this->apiCampoFe = new ApiCampofe();
 
         $resultBitrix = $this->apiBitrix24->getLead($idProspecto);
-
+        $apellidos = explode(" ", $resultBitrix["LAST_NAME"]);
         $dataBitrix = [
             "ac_pro_dni" => $resultBitrix["UF_CRM_1732304190"],
-            "ac_pro_tipo_doc" => ($resultBitrix["UF_CRM_1732304190"] == 112) ? "DNI" : "CE",
+            "ac_pro_tipo_doc" => (string)($resultBitrix["UF_CRM_1732304190"] == 102) ? "DNI" : (($resultBitrix["UF_CRM_1732304190"] == 104) ? "CE" : (($resultBitrix["UF_CRM_1732304190"] == 112) ? 'PASS' :  'DNI')),
             "ac_pro_id_lead" =>  $resultBitrix["ID"],
             "ac_pro_fecha_proceso" => $resultBitrix["DATE_CREATE"],
-            "ac_pro_origen" => "P",
+            "ac_pro_origen" => "W",
             "ac_pro_nombres" => $resultBitrix["NAME"],
-            "ac_pro_ape_paterno" => $resultBitrix["LAST_NAME"],
-            "ac_pro_ape_materno" => $resultBitrix["LAST_NAME"],
+            "ac_pro_ape_paterno" => $apellidos[0],
+            "ac_pro_ape_materno" => $apellidos[1],
             "ac_pro_telefono" => $resultBitrix["PHONE"][0]["VALUE"],
             "ac_pro_correo" => $resultBitrix["EMAIL"][0]["VALUE"],
             "ac_pro_distrito" => $resultBitrix["UF_CRM_1732304773"] ? $resultBitrix["UF_CRM_1732304773"] : "",
@@ -59,7 +67,7 @@ class CampoFeConsejerosController extends \Leaf\Controller
             "ac_pro_inversion_mes" => (string)$resultBitrix["UF_CRM_1734371718"] ? $resultBitrix["UF_CRM_1734371718"] : '',
             "ac_pro_personas_proteger" => (string)$resultBitrix["UF_CRM_1734371784"] ? $resultBitrix["UF_CRM_1734371784"] : '',
             "ac_pro_seguro" => (string)($resultBitrix["UF_CRM_1734371828"] == 556) ? 'SI' : 'NO',
-            "ac_pro_camposanto" => (string)($resultBitrix["UF_CRM_1732308755"] == 196) ? 'N' : (($resultBitrix["UF_CRM_1732308755"] == 198) ? 'L' : (($resultBitrix["UF_CRM_1732308755"] == 200) ? 'H' : 'Desconocido')),
+            "ac_pro_camposanto" => (string)($resultBitrix["UF_CRM_1732308755"] == 196) ? 'N' : (($resultBitrix["UF_CRM_1732308755"] == 198) ? 'L' : (($resultBitrix["UF_CRM_1732308755"] == 200) ? 'H' : 'N')),
             "ac_pro_cod_vendedor" => (string)$cod_vendedor,
             "ubi_depart_domic" => (string)$resultBitrix["UF_CRM_1734374506"] ? (string)$resultBitrix["UF_CRM_1734374506"] : '',
             "ubi_provin_domic" => (string)$resultBitrix["UF_CRM_1734374527"] ? (string)$resultBitrix["UF_CRM_1734374527"] : '',
@@ -71,21 +79,55 @@ class CampoFeConsejerosController extends \Leaf\Controller
             "fch_reunion" => (string)$resultBitrix["UF_CRM_1732308492"],
             "cod_tipo_reunion" => (string)($resultBitrix["UF_CRM_1732308280"] == 150) ? 'V' : 'P',
         ];
-        $dataBitrix = json_encode($dataBitrix);
-        $this->helpers->LogRegister($dataBitrix);
-        /*
-        $this->apiCampoFe = new ApiCampofe();
-        $this->apiCampoFe->BlindarLead($Cedula, $TipoDocumento); */
+        $dataBitrixFormated = json_encode($dataBitrix);
+
+        $result = $this->apiCampoFe->BlindarLead($dataBitrix);
+        $this->helpers->LogRegister($result);
+
+        switch ($result["data"]["codigo"]) {
+            case '1':
+                # code...
+                break;
+
+            default:
+                # code...
+                break;
+        }
+
+        if ($result["data"]["codigo"] == 1) {
+            $this->apiBitrix24->BP_lead($idProspecto);
+            $this->apiBitrix24->MessaggeCRM($idProspecto, "El lead fue asignado con exito");
+            $datalead = [
+                "UF_CRM_1732308416" => $dsc_vendedor,
+                "UF_CRM_1732308439" => $cod_vendedor
+            ];
+            $this->apiBitrix24->UpdateLead_general($idProspecto, $datalead);
+        } else {
+            $this->apiBitrix24->MessaggeCRM($idProspecto, $result["data"]["mensaje"]);
+        }
+        return render('Consejeros/update', ['idProspecto' => $result["data"]["mensaje"]]);
     }
-    public function desblindar($id)
+    public function desblindar($id, $tipoDocumento, $documento)
     {
-        $Cedula =   app()->request()->get('cedula');
-        $TipoDocumento =   app()->request()->get('TipoDocumento');
-
-
+        $this->helpers = new Auxhelpers();
         $this->apiBitrix24 = new APIBitrix24();
         $this->apiCampoFe = new ApiCampofe();
-        $this->apiCampoFe->desblindarLead($Cedula, $TipoDocumento);
+
+        $resultBitrix = $this->apiBitrix24->getLead($id);
+        $data = [
+            "ac_pro_tipo_doc" =>  $tipoDocumento,
+            "ac_pro_dni" => $documento,
+        ];
+        $result = $this->apiCampoFe->desblindarLead($data);
+        $this->helpers->LogRegister($result);
+        if ($result["data"]["codigo"] == 0) {
+            $r = $this->apiBitrix24->BP_lead_desblindar($id, idProceso: 82);
+            $this->helpers->LogRegister($r);
+            $this->apiBitrix24->MessaggeCRM($id, $result["data"]["mensaje"]);
+            $this->apiBitrix24->BP_terminate($resultBitrix["result"]["UF_CRM_1737599200"]);
+        } else {
+            $this->apiBitrix24->MessaggeCRM($id, mensaje: $result["data"]["mensaje"]);
+        }
 
         return true;
     }

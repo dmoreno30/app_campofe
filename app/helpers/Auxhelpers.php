@@ -7,6 +7,7 @@ use App\Models\ContactBitrix;
 class Auxhelpers
 {
     private $Bitrix;
+    private $NuevafechaNacimiento;
     public function LogRegister($arr, $title = '')
     {
         try {
@@ -65,5 +66,21 @@ class Auxhelpers
             $resultado = trim($valor[0]);
             return $resultado;
         }
+    }
+    public function calcularEdad($fechaNacimiento)
+    {
+
+        // Usamos createFromFormat() para definir el formato correcto
+        $this->NuevafechaNacimiento = \DateTime::createFromFormat('d/m/Y', $fechaNacimiento);
+
+        // Verificamos si la fecha se creó correctamente
+        if (!$this->NuevafechaNacimiento) {
+            throw new Exception("Fecha de nacimiento inválida");
+        }
+
+        $fechaActual = new \DateTime();  // Obtiene la fecha actual
+        $edad = $fechaActual->diff($this->NuevafechaNacimiento);  // Calcula la diferencia entre la fecha actual y la fecha de nacimiento
+
+        return $edad->y;  // Devuelve solo los años
     }
 }

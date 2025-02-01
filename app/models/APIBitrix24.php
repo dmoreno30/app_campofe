@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Core\crest;
+use App\helpers\Auxhelpers;
 
 /**
  * CampoFeAPI Model
@@ -13,14 +14,13 @@ use App\Core\crest;
 class APIBitrix24
 {
     private $ConsultaRENIEC = 'https://appmovil.grupofe.com.pe/com/prospecto/digital/consulta_reniec';
-
+    private $helpers;
 
 
     public function UpdateLead($id, $data)
     {
         $apellidos =  $data["ape_paterno"] . " " . $data["ape_materno"];
-        $mensaje = ($data["mensaje"] == "El prospecto NO existe" || $data["mensaje"] == "El prospecto si existe pero esta libre") ? 122 : 120;
-
+        $this->helpers = new Auxhelpers();
         $fields = [
             'id' => $id,
             'NAME' => $data["nombres"],
@@ -29,10 +29,9 @@ class APIBitrix24
             'UF_CRM_1732304773' => $data["distri_domic"],
             'BIRTHDATE' => $data["fch_nacimiento"],
             'UF_CRM_1732304925' => $data["direccion"],
+            'UF_CRM_1732304390' => $data["edad"],
             'UF_CRM_1732304190' => $data["num_dni"],
             'UF_CRM_1732304809' => ($data["ubi_depart_domic"] == 14) ? 114 : 116,
-            'UF_CRM_1732304972' =>  $mensaje,
-            'UF_CRM_1732308416' => ($mensaje == 120) ? $mensaje : "",
             'UF_CRM_1734374506' => $data["ubi_depart_domic"],
             'UF_CRM_1734374527' => $data["ubi_provin_domic"],
             'UF_CRM_1734374546' => $data["ubi_distri_domic"],
@@ -40,17 +39,23 @@ class APIBitrix24
             'UF_CRM_1734375147' => $data["provin_domic"],
             'UF_CRM_1734375175' => $data["distri_domic"],
         ];
-
+        $this->helpers->LogRegister($fields);
         $result = crest::call('crm.lead.update', [
             'id' => $id,
             'fields' => $fields
         ]);
 
-        if ($mensaje == 120) {
-            $this->BP_lead($id);
-            $this->MessaggeCRM($id, "El Lead se encuentra Blindado por 30 días");
-        }
+        $this->MessaggeCRM($id, "Lead actualizado con los datos de la RENIEC ");
 
+
+        return $result;
+    }
+    public function UpdateLead_general($id, $data)
+    {
+        $result = crest::call('crm.lead.update', [
+            'id' => $id,
+            'fields' => $data
+        ]);
         return $result;
     }
     public function getLead($id)
@@ -69,17 +74,48 @@ class APIBitrix24
 
         return $result["result"];
     }
-    private function BP_lead($idProspecto)
+    public function BP_lead($idProspecto)
     {
-        $params = [
-            "TEMPLATE_ID" => 64,
-            "DOCUMENT_ID" => ['crm', 'CCrmDocumentLead', $idProspecto],
-        ];
-        crest::call("bizproc.workflow.start", [
-            $params
-        ]);
+        $result = CRest::call(
+            'bizproc.workflow.start',
+            [
+                'TEMPLATE_ID' => 64,
+                'DOCUMENT_ID' => [
+                    'crm',
+                    'CCrmDocumentLead',
+                    $idProspecto
+                ]
+            ]
+        );
     }
-    private function MessaggeCRM($id, $mensaje)
+    public function BP_lead_desblindar($idProspecto, $idProceso)
+    {
+        $result = CRest::call(
+            'bizproc.workflow.start',
+            [
+                'TEMPLATE_ID' => $idProceso,
+                'DOCUMENT_ID' => [
+                    'crm',
+                    'CCrmDocumentLead',
+                    $idProspecto
+                ]
+            ]
+        );
+        return $result;
+    }
+    public function BP_terminate($codigoBP)
+    {
+        $result = CRest::call(
+            'bizproc.workflow.terminate',
+            [
+                'ID' => $codigoBP,
+                'STATUS' => 'Lead no asignado'
+
+            ]
+        );
+        return $result;
+    }
+    public function MessaggeCRM($id, $mensaje)
     {
 
         $result = crest::call(
@@ -93,7 +129,7 @@ class APIBitrix24
                 ]
             ]
         );
-        print_r($result);
+
         return $result;
     }
 }

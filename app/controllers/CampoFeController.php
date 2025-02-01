@@ -17,6 +17,7 @@ class CampoFeController extends \Leaf\Controller
         $placement_options = json_decode($_REQUEST['PLACEMENT_OPTIONS'], true);
         $idProspecto = $placement_options["ID"];
 
+
         return render('Principal/index', ['idProspecto' => $idProspecto]);
     }
     public function add()
@@ -27,6 +28,12 @@ class CampoFeController extends \Leaf\Controller
 
         $this->apiCampoFe = new ApiCampofe();
         $result = $this->apiCampoFe->findUser($Cedula, $TipoDocumento);
+
+        $this->apiBitrix24 = new APIBitrix24();
+        if ($result["data"]["codigo"] == -3) {
+            $this->apiBitrix24->BP_lead($idProspecto);
+            $this->apiBitrix24->MessaggeCRM($idProspecto, "El Lead esta blindado en el sistema");
+        }
 
         return render('Principal/index', ['result' => $result, 'idProspecto' => $idProspecto]);
     }
