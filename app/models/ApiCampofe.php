@@ -5,8 +5,7 @@ namespace App\Models;
 /**
  * CampoFeAPI Model
  * ---
- * The Nova model provides a space to set atrributes
- * that are common to all models
+ * La API de Campo Fe model Nos proporciona los metodos para la comunicación
  */
 class ApiCampofe
 {
@@ -118,7 +117,7 @@ class ApiCampofe
         return $result;
     }
 
-    public function URL_ReagendarCita($data)
+    public function ReagendarCita($data)
     {
 
         $result = $this->CurlPost($data,  $this->URL_ReagendarCita, "POST");

@@ -6,4 +6,4 @@ app()->POST('/consejeros/listar', 'CampoFeConsejerosController@list');
 app()->POST('/', 'CampoFeController@index');
 app()->POST('/search', 'CampoFeController@add');
 app()->POST('/prospectos/{idProspecto}', 'Bitrix24Controller@update');
-app()->POST('/citas/{idProspecto}', 'CampoFeCitasController@index');
+app()->POST('/citas/{idProspecto}/', 'CampoFeCitasController@index');

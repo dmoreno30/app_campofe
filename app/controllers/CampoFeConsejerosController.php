@@ -84,16 +84,6 @@ class CampoFeConsejerosController extends \Leaf\Controller
         $result = $this->apiCampoFe->BlindarLead($dataBitrix);
         $this->helpers->LogRegister($result);
 
-        switch ($result["data"]["codigo"]) {
-            case '1':
-                # code...
-                break;
-
-            default:
-                # code...
-                break;
-        }
-
         if ($result["data"]["codigo"] == 1) {
             $this->apiBitrix24->BP_lead($idProspecto);
             $this->apiBitrix24->MessaggeCRM($idProspecto, "El lead fue asignado con exito");
