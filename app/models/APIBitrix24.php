@@ -87,6 +87,7 @@ class APIBitrix24
                 ]
             ]
         );
+        return $result;
     }
     public function BP_lead_desblindar($idProspecto, $idProceso)
     {

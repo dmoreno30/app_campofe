@@ -28,8 +28,9 @@ class CampoFeCitasController extends \Leaf\Controller
     public function index($idProspecto)
     {
 
-
+        $this->apiBitrix24->MessaggeCRM($idProspecto, "Información enviada, espere...");
         $dataBitrix =  $this->estructurarData($idProspecto);
+        $this->helpers->LogRegister($dataBitrix);
         $resultCita =  $this->apiCampoFe->ReagendarCita($dataBitrix);
         $this->helpers->LogRegister($resultCita);
 
@@ -58,7 +59,7 @@ class CampoFeCitasController extends \Leaf\Controller
 
 
         // Usamos un valor predeterminado para evitar errores si no existe
-        $fechaReunion = $this->helpers->FormatDate($resultBitrix["UF_CRM_1732308492"] ?? null);
+        $fechaReunion = $this->helpers->FormatDateAC($resultBitrix["UF_CRM_1732308492"] ?? null);
 
         $dataBitrix = [
             "cod_documento_identidad" => (string)(

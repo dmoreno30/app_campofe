@@ -14,14 +14,18 @@ class CampoFeConsejerosController extends \Leaf\Controller
     private $apiCampoFe;
     private $apiBitrix24;
     private $helpers;
+
+    public function __construct()
+    {
+        $this->helpers = new Auxhelpers();
+        $this->apiBitrix24 = new APIBitrix24();
+        $this->apiCampoFe = new ApiCampofe();
+    }
     public function index()
     {
 
         $placement_options = json_decode($_REQUEST['PLACEMENT_OPTIONS'], true);
         $idProspecto = $placement_options["ID"];
-
-
-
         return render('Consejeros/index', ['idProspecto' => $idProspecto]);
     }
 
@@ -31,9 +35,7 @@ class CampoFeConsejerosController extends \Leaf\Controller
         $consultar =   app()->request()->get('consultar');
         $idProspecto =   app()->request()->get('idProspecto');
         if ($consultar == "consultar") {
-            $this->apiCampoFe = new ApiCampofe();
-            $this->apiBitrix24 = new apiBitrix24();
-            $this->helpers = new Auxhelpers();
+
             $result = $this->apiCampoFe->consejeros();
             $resultBitrix24 = $this->apiBitrix24->getLead($idProspecto);
             $blindado = $resultBitrix24["UF_CRM_1732304972"] == 120 ? "SI" : "NO";
@@ -43,11 +45,12 @@ class CampoFeConsejerosController extends \Leaf\Controller
     }
     public function blindar($idProspecto, $cod_vendedor, $dsc_vendedor)
     {
-        $this->helpers = new Auxhelpers();
-        $this->apiBitrix24 = new APIBitrix24();
-        $this->apiCampoFe = new ApiCampofe();
+
+
+        $this->apiBitrix24->MessaggeCRM($idProspecto, "Información enviada, espere...");
 
         $resultBitrix = $this->apiBitrix24->getLead($idProspecto);
+        $fechadeReunion = $this->helpers->FormatDateAC(nuevafecha: $resultBitrix["UF_CRM_1732308492"]);
         $apellidos = explode(" ", $resultBitrix["LAST_NAME"]);
         $dataBitrix = [
             "ac_pro_dni" => $resultBitrix["UF_CRM_1732304190"],
@@ -76,26 +79,43 @@ class CampoFeConsejerosController extends \Leaf\Controller
             "provin_domic" => (string)$resultBitrix["UF_CRM_1734375147"] ? (string)$resultBitrix["UF_CRM_1734375147"] : '',
             "distri_domic" => (string)$resultBitrix["UF_CRM_1734375175"] ? (string)$resultBitrix["UF_CRM_1734375175"] : '',
             "direccion" => (string)$resultBitrix["UF_CRM_1732304925"],
-            "fch_reunion" => (string)$resultBitrix["UF_CRM_1732308492"],
+            "fch_reunion" => $fechadeReunion,
             "cod_tipo_reunion" => (string)($resultBitrix["UF_CRM_1732308280"] == 150) ? 'V' : 'P',
         ];
-        $dataBitrixFormated = json_encode($dataBitrix);
 
         $result = $this->apiCampoFe->BlindarLead($dataBitrix);
-        $this->helpers->LogRegister($result);
+        $this->helpers->LogRegister($dataBitrix);
+        if ($result["error"] === null) {
+            switch ($result["data"]["codigo"]) {
+                case 1:
+                    $this->apiBitrix24->BP_lead($idProspecto);
 
-        if ($result["data"]["codigo"] == 1) {
-            $this->apiBitrix24->BP_lead($idProspecto);
-            $this->apiBitrix24->MessaggeCRM($idProspecto, "El lead fue asignado con exito");
-            $datalead = [
-                "UF_CRM_1732308416" => $dsc_vendedor,
-                "UF_CRM_1732308439" => $cod_vendedor
-            ];
-            $this->apiBitrix24->UpdateLead_general($idProspecto, $datalead);
+                    $this->apiBitrix24->MessaggeCRM($idProspecto, "El lead fue asignado con exito");
+                    $datalead = [
+                        "UF_CRM_1732308416" => $dsc_vendedor,
+                        "UF_CRM_1732308439" => $cod_vendedor
+                    ];
+                    $this->apiBitrix24->UpdateLead_general($idProspecto, $datalead);
+                    break;
+                case 0:
+                    $this->apiBitrix24->BP_lead($idProspecto);
+
+                    $this->apiBitrix24->MessaggeCRM($idProspecto, "El lead fue asignado con exito");
+                    $datalead = [
+                        "UF_CRM_1732308416" => $dsc_vendedor,
+                        "UF_CRM_1732308439" => $cod_vendedor
+                    ];
+                    $this->apiBitrix24->UpdateLead_general($idProspecto, $datalead);
+                    break;
+                case -1:
+                    $this->apiBitrix24->MessaggeCRM($idProspecto, $result["data"]["mensaje"]);
+                    break;
+            }
         } else {
-            $this->apiBitrix24->MessaggeCRM($idProspecto, $result["data"]["mensaje"]);
+            $this->apiBitrix24->MessaggeCRM($idProspecto, $result["error"]["mensaje"]);
         }
-        return render('Consejeros/update', ['idProspecto' => $result["data"]["mensaje"]]);
+
+        return render('Consejeros/update', ['mensaje' => $result["data"]["mensaje"]]);
     }
     public function desblindar($id, $tipoDocumento, $documento)
     {
@@ -104,19 +124,26 @@ class CampoFeConsejerosController extends \Leaf\Controller
         $this->apiCampoFe = new ApiCampofe();
 
         $resultBitrix = $this->apiBitrix24->getLead($id);
+        $this->apiBitrix24->MessaggeCRM($id, "Información enviada, espere...");
+
         $data = [
             "ac_pro_tipo_doc" =>  $tipoDocumento,
             "ac_pro_dni" => $documento,
         ];
         $result = $this->apiCampoFe->desblindarLead($data);
         $this->helpers->LogRegister($result);
-        if ($result["data"]["codigo"] == 0) {
-            $r = $this->apiBitrix24->BP_lead_desblindar($id, idProceso: 82);
-            $this->helpers->LogRegister($r);
-            $this->apiBitrix24->MessaggeCRM($id, $result["data"]["mensaje"]);
-            $this->apiBitrix24->BP_terminate($resultBitrix["result"]["UF_CRM_1737599200"]);
+        if ($result["error"] === null) {
+
+            if ($result["data"]["codigo"] == 0) {
+                $r = $this->apiBitrix24->BP_lead_desblindar($id, idProceso: 82);
+                $this->apiBitrix24->MessaggeCRM($id, $result["data"]["mensaje"]);
+                $tr = $this->apiBitrix24->BP_terminate($resultBitrix["UF_CRM_1737599200"]);
+                $this->helpers->LogRegister($tr);
+            } else {
+                $this->apiBitrix24->MessaggeCRM($id, mensaje: $result["data"]["mensaje"]);
+            }
         } else {
-            $this->apiBitrix24->MessaggeCRM($id, mensaje: $result["data"]["mensaje"]);
+            $this->apiBitrix24->MessaggeCRM($id, mensaje: $result["error"]["mensaje"]);
         }
 
         return true;
