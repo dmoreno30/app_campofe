@@ -5,7 +5,6 @@
 
 <div class="titulo">
   <h1>Lista de consejeros disponibles</h1>
-
 </div>
 <form action="/app_campofe/consejeros/listar" Method="Post" class="search-container">
   <input type="hidden" style="display: none;" value="consultar" name="consultar">
@@ -26,9 +25,9 @@
     </tr>
   </thead>
   <tbody>
+
     @if(isset($result))
     @foreach($result["data"] as $vendedor)
-
     <tr>
       <td>{{ $vendedor["cod_vendedor"]}}</td>
       <td>{{ $vendedor["dsc_vendedor"]}}</td>
@@ -38,19 +37,19 @@
       method="POST" id="blindarForm">
       <input type="hidden" style="display: none;" name="result" value="{{json_encode($result)}}">
 
-      <div id="loading" style="display: none;">
-      <p>Por favor, espera. Estamos procesando tu solicitud...</p>
-      <div class="spinner"></div> Spinner de carga
+      <div id="loading" class="loading-container" style="display: none;">
+      <p>Por favor Espere....</p>
+      <div class="spinner"></div>
       </div>
 
       @if ($blindado == "SI")
       <button type="submit" class="blindadoOFF" disabled aria-disabled="true"
       title="El lead ya se encuentra blindado">Lead ya blindado</button>
     @else
-      <button type="submit" id="submitButton" class="boton-aprobacion">Sí</button>
+
+      <button type="submit" id="submitButton" class="boton-aprobacion" onclick="saludar()">Sí</button>
     @endif
       </form>
-
       </td>
     </tr>
 

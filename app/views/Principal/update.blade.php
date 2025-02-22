@@ -1,9 +1,10 @@
 <!-- /views/Principal/index.blade.php -->
 @extends('app')
-@section('title', 'Actualización de prospecto')
+@section('title', 'Actualización de datos del prospecto')
 @section('content')
-<div class="titulo">
-  <h1>Datos actualizados en Bitrix24 de manera correcta</h1>
-  <h4>Recarga la pantalla si deseas consultar nuevamente</h4>
+<div class="PantallConfirmacion">
+  <h1 class="tituloPrincipal">Status de actualización de datos</h1>
+  <h3 class="tituloSegundo">Prospecto actualizado con la información obtenida.</h3>
+  <h4 class="tituloTercero"> Recarga la pantalla si deseas consultar un documento nuevamente.</h4>
 </div>
 @endsection

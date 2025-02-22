@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Campo Fe')</title>
-    <link rel="stylesheet" href="{{ assets('css/styles.css') }}">
-    <link rel="stylesheet" href="https://api.asesores-e.com/app_campofe/public/assets/css/custom.css">
+    <link rel="stylesheet" href="/app_campofe/public/assets/css/custom.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,9 +20,10 @@
 <main class="mainContent">
     @yield('content')
 </main>
-<script src="https://api.asesores-e.com/app_campofe/public/assets/js/scriptCustom.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
+
+<script src="/app_campofe/public/assets/js/scriptCustom.js"></script>
 
 </html>

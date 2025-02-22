@@ -54,44 +54,34 @@ class CampoFeCitasController extends \Leaf\Controller
     private function estructurarData($idProspecto)
     {
 
-
         $resultBitrix = $this->apiBitrix24->getLead($idProspecto);
 
+        try {
+            $fechaReunion = $this->helpers->FormatDateAC($resultBitrix["UF_CRM_1732308492"] ?? null);
 
-        // Usamos un valor predeterminado para evitar errores si no existe
-        $fechaReunion = $this->helpers->FormatDateAC($resultBitrix["UF_CRM_1732308492"] ?? null);
-
-        $dataBitrix = [
-            "cod_documento_identidad" => (string)(
-                ($resultBitrix["UF_CRM_1732304190"] ?? 102) == 102 ? "DNI" : (($resultBitrix["UF_CRM_1732304190"] ?? 104) == 104 ? "CE" : (($resultBitrix["UF_CRM_1732304190"] ?? 112) == 112 ? 'PASS' : 'DNI'))
-            ),
-            "dsc_documento_identidad" => (string)($resultBitrix["UF_CRM_1732304190"] ?? ''),
-            "ac_pro_id_lead" => (string)($resultBitrix["ID"] ?? ''),
-            "cod_vendedor" => (string)($resultBitrix["UF_CRM_1732308439"] ?? ''),
-            "cod_etapa" => "2",
-            "id_item_etapa" => 0,
-            "fch_reunion" => $fechaReunion,
-            "tipo_reunion" => (string)(($resultBitrix["UF_CRM_1732308280"] ?? 150) == 150 ? 'V' : 'P'),
-            "cod_estado" => "SEG",
-            "dsc_comentario" => (string)($resultBitrix["COMMENTS"] ?? ''),
-            "dsc_detalle" => (string)($resultBitrix["COMMENTS"] ?? ''),
-            "dsc_noleinteresa" => null,
-        ];
-
-        //$dataBitrixFormated = json_encode($dataBitrix);
-
-        return $dataBitrix;
-    }
-
-    private function handleSuccess($resultCita, $idProspecto)
-    {
-        switch ($resultCita["data"]["codigo"]) {
-            case "0":
-                $this->apiBitrix24->MessaggeCRM($idProspecto, $resultCita["data"]["mensaje"]);
-                break;
-            default:
-                $this->apiBitrix24->MessaggeCRM($idProspecto, "Ocurrió un error al Reagendar la Cita");
-                break;
+            $dataBitrix = [
+                "cod_documento_identidad" => (string)(
+                    ($resultBitrix["UF_CRM_1732304190"] ?? 102) == 102 ? "DNI" : (($resultBitrix["UF_CRM_1732304190"] ?? 104) == 104 ? "CE" : (($resultBitrix["UF_CRM_1732304190"] ?? 112) == 112 ? 'PASS' : 'DNI'))
+                ),
+                "dsc_documento_identidad" => (string)($resultBitrix["UF_CRM_1732304190"] ?? ''),
+                "ac_pro_id_lead" => (string)($resultBitrix["ID"] ?? ''),
+                "cod_vendedor" => (string)($resultBitrix["UF_CRM_1732308439"] ?? ''),
+                "cod_etapa" => "2",
+                "id_item_etapa" => 0,
+                "fch_reunion" => $fechaReunion,
+                "tipo_reunion" => (string)(($resultBitrix["UF_CRM_1732308280"] ?? 150) == 150 ? 'V' : 'P'),
+                "cod_estado" => "SEG",
+                "dsc_comentario" => (string)($resultBitrix["COMMENTS"] ?? ''),
+                "dsc_detalle" => (string)($resultBitrix["COMMENTS"] ?? ''),
+                "dsc_noleinteresa" => null,
+            ];
+            return $dataBitrix;
+        } catch (\Throwable $e) {
+            $this->apiBitrix24->MessaggeCRM($idProspecto, "Hubo un error por favor verifica los valores de los campos");
+            echo "Error: Hubo un error por favor verifica los valores de los campos";
+            // O registrar el error en un archivo
+            $this->helpers->LogRegister($e->getMessage());
         }
+        //$dataBitrixFormated = json_encode($dataBitrix);
     }
 }

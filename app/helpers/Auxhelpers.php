@@ -83,12 +83,22 @@ class Auxhelpers
 
         return $edad->y;  // Devuelve solo los años
     }
-    public function FormatDate($nuevafecha)
+    public function FormatDateAC($nuevafecha)
     {
         $fecha = new \DateTime($nuevafecha);
 
         // Formatear la fecha al formato deseado
-        $fechaFormateada = $fecha->format('Y-m-d H:i');
+        $fechaFormateada = $fecha->format('Y-m-d\TH:i:s');
+
+        // Mostrar el resultado
+        return $fechaFormateada;
+    }
+    public function FormatDateRC($nuevafecha)
+    {
+        $fecha = new \DateTime($nuevafecha);
+
+        // Formatear la fecha al formato deseado
+        $fechaFormateada = $fecha->format('Y-m-d H:i:s');
 
         // Mostrar el resultado
         return $fechaFormateada;
