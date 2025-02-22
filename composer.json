@@ -38,7 +38,8 @@
         "leafs/vite": "*",
         "leafs/form": "^3.0",
         "leafs/http": "^3.0",
-        "leafs/aloe": "^2.0"
+        "leafs/aloe": "^2.0",
+        "monolog/monolog": "^3.8"
     },
     "require-dev": {
         "fakerphp/faker": "^1.16",
